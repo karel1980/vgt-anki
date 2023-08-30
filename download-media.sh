@@ -12,7 +12,11 @@ cat assets/$category/signs.json|jq  '.signOverviews[].video' -r > assets/$catego
 while read url; do
     path="media/$category/${url##*protected_media/}"
     mkdir -p "$(dirname $path)"
-    curl "$url" -o "$path"
+    if [ ! -e "$path" ]; then
+        curl "$url" -o "$path"
+    else
+        echo "$path already exists"
+    fi
 done <assets/$category/media-list.txt
 
 
