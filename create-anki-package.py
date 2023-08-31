@@ -47,7 +47,7 @@ def create_anki_package(categories, regions, model):
                 path=('media/%s/'%category) + video[66:]
                 media_files.append(path)
                 shutil.copyfile(path, os.path.basename(path))
-                note = create_note(model, ' / '.join(translations), "[sound:%s]"%(os.path.basename(path)), category, ' / '.join(regions))
+                note = create_note(model, ' / '.join(translations), "[sound:%s]"%(os.path.basename(path)), category, '/'.join(term_regions))
                 deck.add_note(note)
 
     duplicates = [item for item, count in collections.Counter(media_files).items() if count > 1]
@@ -110,6 +110,6 @@ if __name__=="__main__":
     print("Creating package")
     print("Categories:", args.categories)
     print("Regions:", args.regions)
-    print("Model:", model.name[0])
+    print("Model:", model.name)
 
     create_anki_package(args.categories, args.regions, model)

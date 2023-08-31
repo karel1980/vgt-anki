@@ -18,11 +18,14 @@ The decks will contain terms for all regions. If you want more control, see Adva
 ## Advanced usage
 
 Using the script `create-anki-package.py` you can have more control over the contents of the created Anki package.
+
+Make sure to download the required categories beforehand using the download scripts `download-media.sh` or `./download-all-media.sh`. Try not to download more than you need.
+
+Using `create-anki-package.py` you can specify which regions to include in a deck, which categories to include in a deck and which card model to use (word to sign, sign to word or bidirectional)
+
 Run `create-anki-package.py -h` for more information.
 
-Make sure to download the required categories beforehand. A full example would look like this:
+For example:
 
-    ./download-media.sh Numbers
-    ./download-media.sh Sport
     ./create-anki-package.py --regions 'Vlaanderen' 'Oost-Vlaanderen' --categories Numbers Sport --sign-to-word
 

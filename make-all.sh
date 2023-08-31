@@ -2,7 +2,8 @@
 
 set -e
 
+./download-all-media.sh
+
 while read category; do
-  ./download-media.sh $category
-  ./create-anki-package.py $category
+  ./create-anki-package.py --categories $category --regions "Oost-Vlaanderen" "Vlaanderen"
 done <categories.txt
