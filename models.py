@@ -14,7 +14,7 @@ descriptions[Model.WORD_TO_SIGN]= "Word to sign"
 descriptions[Model.SIGN_TO_WORD]= "Sign to word",
 descriptions[Model.BIDIRECTIONAL]= "Word to sign and back"
 
-def create_model(id, model):
+def create_model(model):
     templates = []
 
     if model in [ Model.WORD_TO_SIGN, Model.BIDIRECTIONAL ]:
@@ -32,7 +32,7 @@ def create_model(id, model):
         })
 
     return genanki.Model(
-      20230831000 + model,
+      20230832000 + model,
       descriptions[model],
       fields=[
         {'name': 'Question'},
@@ -40,20 +40,10 @@ def create_model(id, model):
         {'name': 'Category'},
         {'name': 'Regions'}
       ],
-      templates=[
-        #{
-        #  'name': 'Word to sign',
-        #  'qfmt': '{{Question}}<br/>{{Category}}<br/>{{Regions}}',
-        #  'afmt': '{{FrontSide}}<hr id="answer">{{Answer}}',
-        #},
-        {
-          'name': 'Sign to word',
-          'qfmt': '{{Regions}}{{Answer}}',
-          'afmt': '{{FrontSide}}<hr id="answer">{{Question}}',
-        }
-      ])
+      templates=templates
+      )
 
-WORD_TO_SIGN = create_model(202308310001, Model.WORD_TO_SIGN)
-SIGN_TO_WORD = create_model(202308310001, Model.SIGN_TO_WORD)
-BIDIRECTIONAL = create_model(202308310001, Model.BIDIRECTIONAL)
+WORD_TO_SIGN = create_model(Model.WORD_TO_SIGN)
+SIGN_TO_WORD = create_model(Model.SIGN_TO_WORD)
+BIDIRECTIONAL = create_model(Model.BIDIRECTIONAL)
 
