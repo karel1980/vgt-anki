@@ -11,7 +11,7 @@ class Model(IntEnum):
 descriptions = dict()
 
 descriptions[Model.WORD_TO_SIGN]= "Word to sign"
-descriptions[Model.SIGN_TO_WORD]= "Sign to word",
+descriptions[Model.SIGN_TO_WORD]= "Sign to word"
 descriptions[Model.BIDIRECTIONAL]= "Word to sign and back"
 
 def create_model(model):
@@ -35,9 +35,10 @@ def create_model(model):
       20230832000 + model,
       descriptions[model],
       fields=[
+        {'name': 'SignId'},
         {'name': 'Question'},
         {'name': 'Answer'},
-        {'name': 'Category'},
+        {'name': 'Categories'},
         {'name': 'Regions'}
       ],
       templates=templates

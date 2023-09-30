@@ -3,3 +3,4 @@ assets
 media
 *.mp4
 decks
+.DS_Store

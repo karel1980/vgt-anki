@@ -2,8 +2,8 @@
 
 set -e
 
-./download-all-media.sh
+#./download-all-media.sh
 
 while read category; do
-  ./create-anki-package.py --categories $category --regions "Oost-Vlaanderen" "Vlaanderen"
+  ./create-anki-package.py --categories $category --regions "Vlaanderen" --bidirectional
 done <categories.txt

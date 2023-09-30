@@ -2,6 +2,6 @@
 
 set -e
 
-while read category; do
-  ./download-media.sh $category
-done <categories.txt
+for cat in $(cat categories.txt); do
+  ./download-media.sh $cat
+done 

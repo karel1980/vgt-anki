@@ -9,61 +9,87 @@ import sys
 import genanki
 import json
 import collections
+from datetime import datetime
 
-def create_deck(categories, regions):
-    c_joined = ', '.join(categories)
-    r_joined = ', '.join(regions)
+class Sign:
+    def __init__(self, sign_id, regions, gloss_name, translations, video, categories):
+        self.sign_id = sign_id
+        self.regions = regions
+        self.gloss_name = gloss_name
+        self.translations = translations
+        self.video = video
+        self.categories = categories
 
-    title = 'Flemish sign language: %s / %s'%(c_joined, r_joined)
+def create_deck(title):
     id = int(hashlib.md5(title.encode()).hexdigest(), 16) % 10**9
-
     return genanki.Deck(id, title)
 
-def create_note(model, translation, video, category, regions):
+def create_note(model, id, translation, video, categories, regions):
     return genanki.Note(model=model,
-       fields=[translation, video, category, regions])
+       fields=[id, translation, video, categories, regions])
 
-def read_terms(category):
-    data = json.load(open("assets/%s/signs.json"%category))
-    result = []
-    for entry in data['signOverviews']:
-        result.append((entry['translations'], entry['video'],entry['regions']))
+""" returns a dataframe containing all signs over all categories """
+def read_entries(categories):
+    categories_per_sign = dict()
+    
+    signs_by_id = dict()
+    cats_by_sign_id = dict()
 
-    if len(result) >= 1000:
-        print("This category (%s) has 1000 entries. Check you aren't limited by the page size in the download script"%(category))
+    for cat in categories:
+        data = json.load(open("assets/%s/signs.json"%cat))
+        cat_list = data['signOverviews']
 
-    return result
+        if len(cat_list) >= 1000:
+            print("This category (%s) has 1000 entries. Check you aren't limited by the page size in the download script"%(cat))
+
+        for sign in data['signOverviews']:
+            id = sign['signId']
+            signs_by_id[id] = sign
+            cats_by_sign_id.setdefault(id, []).append(cat)
+    
+    return [ create_sign(s, cats_by_sign_id[s['signId']]) for s in signs_by_id.values() ]
+
+def create_sign(sign_data, categories):
+    return Sign(sign_data['signId'], sign_data['regions'], sign_data['glossName'], sign_data['translations'], sign_data['video'], categories)
+
+def create_deck_title(categories, regions):
+    c_joined = ', '.join(categories)
+    r_joined = ', '.join(regions)
+    return 'Flemish sign language: %s / %s'%(c_joined, r_joined)
+
+def all_categories():
+    return ["Animal", "Appearance", "City", "Colors", "Communication", "Country", "Culture", "Education", "Family", "Food", "Health", "Home", "Law", "Leasure", "NameSign", "Nature", "Numbers", "Personality", "Profession", "Region", "Religion", "Science", "Sexuality", "Society", "Sport", "Technology", "Time", "Transport"]
 
 def create_anki_package(categories, regions, model):
-    deck = create_deck(categories, regions)
+    deck_title = create_deck_title(categories, regions)
+    deck = create_deck(deck_title)
     regions = set(regions)
 
-    for category in categories:
-        terms = read_terms(category)
-        media_files = []
+    all_signs = read_entries(all_categories())
+    media_files = set()
 
-        for translations, video, term_regions in terms:
-            if any(region in term_regions for region in regions):
-                path=('media/%s/'%category) + video[66:]
-                media_files.append(path)
-                shutil.copyfile(path, os.path.basename(path))
-                note = create_note(model, ' / '.join(translations), "[sound:%s]"%(os.path.basename(path)), category, '/'.join(term_regions))
-                deck.add_note(note)
+    matching_signs = list(filter(lambda s: any(region in s.regions for region in regions) and any(cat in s.categories for cat in categories), all_signs))
+    
+    for sign in matching_signs:
+        path=('media/%s/'%sign.categories[0]) + sign.video[66:]
+        media_files.add(path)
 
-    duplicates = [item for item, count in collections.Counter(media_files).items() if count > 1]
-    if len(duplicates) > 0:
-        print("found duplicate filenames: ", duplicates)
-        sys.exit(1)
+        shutil.copyfile(path, os.path.basename(path))
+
+        note = create_note(model, str(sign.sign_id), ' / '.join(sign.translations), "[sound:%s]"%(os.path.basename(path)), '/'.join(sign.categories), '/'.join(sign.regions))
+        deck.add_note(note)
 
     if not os.path.exists("decks"):
         os.makedirs("decks")
 
-    apkg = 'decks/%s_in_%s.apkg'%("-".join(categories),"-".join(regions))
+    timestamp = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
+    prefix = 'deck' if len(categories) != 1 else categories[0]
+    apkg = 'decks/%s-%s.apkg'%(prefix, timestamp)
     package = genanki.Package(deck)
-    package.media_files = media_files
+    package.media_files = list(media_files)
     package.write_to_file(apkg)
     print("wrote %s"%apkg)
-    print("result contains %d notes"%(len(media_files)))
+    print("result contains %d notes"%(len(matching_signs)))
 
 def read_categories():
     return [l.strip() for l in open('categories.txt').readlines()]
